@@ -26,6 +26,16 @@ brew install jq tmux
 npm install -g @anthropic-ai/claude-code
 ```
 
+### Chrome DevTools MCP (Optional)
+
+For browser debugging capabilities with Claude Code, add the Chrome DevTools MCP server:
+
+- https://github.com/ChromeDevTools/chrome-devtools-mcp
+
+```bash
+claude mcp add chrome-devtools --scope user npx chrome-devtools-mcp@latest
+```
+
 ## Commands
 
 ### `./ralph/new.sh <project-name>`
