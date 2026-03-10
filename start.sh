@@ -652,11 +652,11 @@ show_status() {
     ' "$project_dir/status.json"
     echo ""
     
-    # Show incomplete stories (handle both formats)
+    # Show incomplete tasks (handle both formats)
     echo "───────────────────────────────────────────────────────────"
-    echo "  Pending Stories"
+    echo "  Pending Tasks"
     echo "───────────────────────────────────────────────────────────"
-    jq -r 'if type == "object" then .userStories else . end | [.[] | select(.passes == false)] | sort_by(.priority // 999) | .[:5][] | "  ○ [\(.id)] P\(.priority // "?") \(.story | .[0:45])"' "$project_dir/prd.json" 2>/dev/null || echo "  (none)"
+    jq -r 'if type == "object" then .userStories else . end | [.[] | select(.passes == false)] | sort_by(.priority // 999) | .[:5][] | "  ○ [\(.id)] P\(.priority // "?") \(.title | .[0:45])"' "$project_dir/prd.json" 2>/dev/null || echo "  (none)"
     echo ""
     
     # Show circuit breaker status

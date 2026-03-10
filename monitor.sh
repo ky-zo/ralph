@@ -155,7 +155,7 @@ display_dashboard() {
         local tests=$(jq -r '.tests_status // "N/A"' "$analysis_file")
         local work=$(jq -r '.work_type // "N/A"' "$analysis_file")
         local files=$(jq -r '.files_modified // 0' "$analysis_file")
-        local tasks=$(jq -r '.tasks_completed // 0' "$analysis_file")
+        local tasks=$(jq -r '.userStories_completed // 0' "$analysis_file")
         local exit_sig=$(jq -r '.exit_signal // false' "$analysis_file")
         
         echo -e "  Tests:         ${tests}"
@@ -179,14 +179,14 @@ display_dashboard() {
         fi
         
         # Show incomplete stories (max 5) - handle both formats, sorted by priority
-        local incomplete=$(jq -r 'if type == "object" then .userStories else . end | [.[] | select(.passes == false)] | sort_by(.priority // 999) | .[:5][] | "  ○ [\(.id)] P\(.priority // "?") \(.story | .[0:40])"' "$prd_file" 2>/dev/null)
+        local incomplete=$(jq -r 'if type == "object" then .userStories else . end | [.[] | select(.passes == false)] | sort_by(.priority // 999) | .[:5][] | "  ○ [\(.id)] P\(.priority // "?") \(.title | .[0:40])"' "$prd_file" 2>/dev/null)
         if [[ -n "$incomplete" ]]; then
             echo -e "${YELLOW}Pending:${NC}"
             echo "$incomplete"
         fi
         
         # Show recently completed (max 3)
-        local completed=$(jq -r 'if type == "object" then .userStories else . end | [.[] | select(.passes == true)] | .[-3:][] | "  ✓ [\(.id)] \(.story | .[0:40])"' "$prd_file" 2>/dev/null)
+        local completed=$(jq -r 'if type == "object" then .userStories else . end | [.[] | select(.passes == true)] | .[-3:][] | "  ✓ [\(.id)] \(.title | .[0:40])"' "$prd_file" 2>/dev/null)
         if [[ -n "$completed" ]]; then
             echo ""
             echo -e "${GREEN}Completed:${NC}"

@@ -175,29 +175,55 @@ You are converting a PRD into actionable tasks. Read and edit the following file
 ### 2. Edit prd.json with this structure:
 \`\`\`json
 {
-  "branchName": "ralph/$project_name",
+  "branchName": "r/$project_name",
   "userStories": [
     {
       "id": "1.1",
-      "category": "technical|functional|ui",
-      "story": "Clear one-sentence description starting with action verb",
+      "title": "Clear one-sentence description starting with action verb",
       "steps": ["Step 1", "Step 2", "Step 3"],
-      "acceptance": "Testable criteria for completion",
+      "acceptanceCriteria": ["Testable criterion 1", "Testable criterion 2"],
       "priority": 1,
-      "passes": false,
-      "notes": ""
+      "passes": false
     }
   ]
 }
 \`\`\`
 
-Story guidelines:
-- "technical" = Database, API, backend, types/schemas
-- "functional" = Business logic, features
-- "ui" = Frontend components, pages, styling
-- Priority: 1-10 (lower = higher priority, implement first)
-- Each story should be completable in 30-60 minutes
-- Order by dependencies (infrastructure before features, backend before frontend)
+## Story Size: The Number One Rule
+
+**Each story must be completable in ONE Ralph iteration (one context window).**
+
+Ralph spawns a fresh Amp instance per iteration with no memory of previous work. If a story is too big, the LLM runs out of context before finishing and produces broken code.
+
+### Right-sized stories:
+- Add a database column and migration
+- Add a UI component to an existing page
+- Update a server action with new logic
+- Add a filter dropdown to a list
+
+### Too big (split these):
+- "Build the entire dashboard" - Split into: schema, queries, UI components, filters
+- "Add authentication" - Split into: schema, middleware, login UI, session handling
+- "Refactor the API" - Split into one story per endpoint or pattern
+
+**Rule of thumb:** If you cannot describe the change in 2-3 sentences, it is too big.
+Each task should be completable in one AI run.
+
+## Story Ordering: Dependencies First
+
+Stories execute in priority order. Earlier stories must not depend on later ones.
+
+**Correct order:**
+1. Schema/database changes (migrations)
+2. Server actions / backend logic
+3. UI components that use the backend
+4. Dashboard/summary views that aggregate data
+
+**Wrong order:**
+1. UI component (depends on schema that does not exist yet)
+2. Schema change
+
+Order by dependencies (infrastructure before features, backend before frontend)
 
 ### 3. Edit requirements.md with technical specifications:
 - System architecture requirements
@@ -209,7 +235,51 @@ Story guidelines:
 
 ### 4. After editing both files, output a brief summary of what was created.
 
-Important Requirement: For both files, use simple, direct and informational language. Avoid being verbose where it's not necessary.
+## Acceptance Criteria: Must Be Verifiable
+
+Each criterion must be something Ralph can CHECK, not something vague.
+
+### Good criteria (verifiable):
+- "Add `status` column to tasks table with default 'pending'"
+- "Filter dropdown has options: All, Active, Completed"
+- "Clicking delete shows confirmation dialog"
+- "Typecheck passes"
+- "Tests pass"
+
+### Bad criteria (vague):
+- "Works correctly"
+- "User can do X easily"
+- "Good UX"
+- "Handles edge cases"
+
+### Always include as final criterion:
+```
+"Typecheck passes"
+```
+
+For stories with testable logic, also include:
+```
+"Tests pass"
+```
+
+### For stories that change UI, also include:
+```
+"Verify in browser using dev-browser skill"
+```
+
+Frontend stories are NOT complete until visually verified. Ralph will use the dev-browser skill to navigate to the page, interact with the UI, and confirm changes work.
+
+### Important Requirement
+For both files, use simple, direct and informational language. Avoid being verbose where it's not necessary.
+
+## Conversion Rules
+
+1. **Each user story becomes one JSON entry**
+2. **IDs**: Sequential (1.1, 1.2, etc.)
+3. **Priority**: Based on dependency order, then document order
+4. **All stories**: `passes: false`.
+5. **branchName**: Derive from feature name, kebab-case, prefixed with `r/`
+6. **Always add**: "Typecheck passes" to every story's acceptance criteria
 
 Now read the PRD and edit the files.
 PROMPTEOF
@@ -245,6 +315,23 @@ You are verifying that a generated prd.json comprehensively covers all requireme
 - UPDATE existing stories if their scope is incomplete
 - UPDATE requirements.md if technical details are missing
 - Ensure all additions follow the same format and guidelines.
+
+## Splitting Large PRDs
+
+If a PRD has big features, split them:
+
+**Original:**
+> "Add user notification system"
+
+**Split into:**
+1. 1.1: Add notifications table to database
+2. 1.2: Create notification service for sending notifications
+3. 1.3: Add notification bell icon to header
+4. 1.4: Create notification dropdown panel
+5. 1.5: Add mark-as-read functionality
+6. 1.6: Add notification preferences page
+
+Each is one focused change that can be completed and verified independently.
 PROMPTEOF
 }
 
@@ -281,7 +368,7 @@ main() {
         local existing_count
         existing_count=$(jq '.userStories | length' "$json_file" 2>/dev/null || echo "0")
         if [[ "$existing_count" -gt 0 ]]; then
-            log "WARN" "prd.json already has $existing_count stories"
+            log "WARN" "prd.json already has $existing_count tasks"
             echo -n "Overwrite? [y/N] "
             read -r response
             if [[ ! "$response" =~ ^[Yy]$ ]]; then
@@ -337,12 +424,12 @@ main() {
     fi
 
     if [[ "$story_count" -eq 0 ]]; then
-        log "ERROR" "prd.json has no stories - conversion failed"
+        log "ERROR" "prd.json has no tasks - conversion failed"
         log "INFO" "Check the log file: $(get_relative_path "$convert_log")"
         exit 1
     fi
 
-    log "SUCCESS" "Phase 1 complete: Generated $story_count stories"
+    log "SUCCESS" "Phase 1 complete: Generated $story_count tasks"
     echo ""
 
     # ═══════════════════════════════════════════════════════════════════════════
@@ -384,7 +471,7 @@ main() {
         
         if [[ -f "$json_file" ]]; then
             final_story_count=$(jq '.userStories | length' "$json_file" 2>/dev/null || echo "0")
-            
+
             # Get IDs from before and after
             local ids_before=$(jq -r '.userStories[].id' "$stories_before" 2>/dev/null | sort)
             local ids_after=$(jq -r '.userStories[].id' "$json_file" 2>/dev/null | sort)
@@ -399,9 +486,9 @@ main() {
             # Count edited stories (same ID but different content)
             while IFS= read -r id; do
                 if [[ -n "$id" ]] && echo "$ids_after" | grep -qx "$id"; then
-                    # Compare the story content (excluding 'passes' and 'notes' which might change)
-                    local before_content=$(jq -c --arg id "$id" '.userStories[] | select(.id == $id) | del(.passes, .notes)' "$stories_before" 2>/dev/null)
-                    local after_content=$(jq -c --arg id "$id" '.userStories[] | select(.id == $id) | del(.passes, .notes)' "$json_file" 2>/dev/null)
+                    # Compare the story content (excluding 'passes' which might change)
+                    local before_content=$(jq -c --arg id "$id" '.userStories[] | select(.id == $id) | del(.passes)' "$stories_before" 2>/dev/null)
+                    local after_content=$(jq -c --arg id "$id" '.userStories[] | select(.id == $id) | del(.passes)' "$json_file" 2>/dev/null)
                     if [[ "$before_content" != "$after_content" ]]; then
                         edited_count=$((edited_count + 1))
                     fi
@@ -421,11 +508,11 @@ main() {
                 changes="Edited $edited_count"
             fi
         fi
-        
+
         if [[ -n "$changes" ]]; then
             log "SUCCESS" "Phase 2 complete: $changes (total: $final_story_count)"
         else
-            log "SUCCESS" "Phase 2 complete: Verified all $final_story_count stories (no changes needed)"
+            log "SUCCESS" "Phase 2 complete: Verified all $final_story_count tasks (no changes needed)"
         fi
     fi
     
@@ -438,19 +525,16 @@ main() {
     # SUMMARY
     # ═══════════════════════════════════════════════════════════════════════════
     local final_count=$(jq '.userStories | length' "$json_file" 2>/dev/null || echo "0")
-    
+
     echo "═══════════════════════════════════════════════════════"
     echo "  CONVERSION COMPLETE"
     echo "═══════════════════════════════════════════════════════"
     echo ""
     echo "Branch: $(jq -r '.branchName // "not set"' "$json_file")"
-    echo "Total stories: $final_count"
+    echo "Total tasks: $final_count"
     echo ""
-    echo "Stories by category:"
-    jq -r '.userStories | group_by(.category) | .[] | "  \(.[0].category): \(length) stories"' "$json_file" 2>/dev/null || echo "  (unable to group)"
-    echo ""
-    echo "First 5 stories (by priority):"
-    jq -r '.userStories | sort_by(.priority) | .[:5][] | "  [\(.id)] P\(.priority) (\(.category)) \(.story)"' "$json_file"
+    echo "First 5 tasks (by priority):"
+    jq -r '.userStories | sort_by(.priority) | .[:5][] | "  [\(.id)] P\(.priority) \(.title)"' "$json_file"
     echo ""
     echo "═══════════════════════════════════════════════════════"
     echo ""

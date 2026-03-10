@@ -1,23 +1,24 @@
 {
-  "branchName": "ralph/feature-name",
+  "branchName": "r/feature-name",
   "userStories": [
     {
       "id": "1.1",
-      "category": "technical",
-      "story": "Create database migration for feature_items table",
+      "title": "Create database migration for feature_items table",
       "steps": [
         "Create migration file in packages/db/supabase/migrations/",
         "Add foreign key constraints to teams and users tables"
       ],
-      "acceptance": "feature_items table exists in database with all columns, proper constraints, indexes, and RLS policies. Migration runs successfully. Team members can only access their own team's data.",
+      "acceptanceCriteria": [
+        "feature_items table exists in database with all columns, proper constraints, indexes, and RLS policies",
+        "Migration runs successfully",
+        "Team members can only access their own team's data"
+      ],
       "priority": 1,
-      "passes": false,
-      "notes": ""
+      "passes": false
     },
     {
       "id": "1.4",
-      "category": "ui",
-      "story": "Create feature items list page with empty state",
+      "title": "Create feature items list page with empty state",
       "steps": [
         "Create apps/web/src/app/app/[teamSlug]/feature/page.tsx",
         "Create apps/web/src/app/app/[teamSlug]/feature/layout.tsx",
@@ -27,15 +28,17 @@
         "Display list of items when data exists",
         "Add 'New Item' button in header"
       ],
-      "acceptance": "Page renders at /app/[teamSlug]/feature. Shows loading state, then either empty state or list of items. New Item button is visible and styled correctly.",
+      "acceptanceCriteria": [
+        "Page renders at /app/[teamSlug]/feature",
+        "Shows loading state, then either empty state or list of items",
+        "New Item button is visible and styled correctly"
+      ],
       "priority": 4,
-      "passes": false,
-      "notes": ""
+      "passes": false
     },
     {
       "id": "1.5",
-      "category": "ui",
-      "story": "Create item card component for list display",
+      "title": "Create item card component for list display",
       "steps": [
         "Create apps/web/src/app/app/[teamSlug]/feature/_components/item-card.tsx",
         "Display item name, status, and key metadata",
@@ -44,15 +47,18 @@
         "Add action menu with edit/delete options",
         "Follow existing card component patterns in codebase"
       ],
-      "acceptance": "ItemCard component renders item data correctly. Status is color-coded. Click navigates to detail. Action menu shows edit and delete options.",
+      "acceptanceCriteria": [
+        "ItemCard component renders item data correctly",
+        "Status is color-coded",
+        "Click navigates to detail",
+        "Action menu shows edit and delete options"
+      ],
       "priority": 5,
-      "passes": false,
-      "notes": ""
+      "passes": false
     },
     {
       "id": "1.6",
-      "category": "functional",
-      "story": "Implement create item form with validation",
+      "title": "Implement create item form with validation",
       "steps": [
         "Create form component using react-hook-form and zod",
         "Add name field with required validation",
@@ -62,15 +68,19 @@
         "Handle success: close form, show toast, refresh list",
         "Handle error: show error message in form"
       ],
-      "acceptance": "Form validates inputs before submission. Creates item via tRPC on submit. Shows loading state during creation. Displays success/error feedback. List refreshes after successful creation.",
+      "acceptanceCriteria": [
+        "Form validates inputs before submission",
+        "Creates item via tRPC on submit",
+        "Shows loading state during creation",
+        "Displays success/error feedback",
+        "List refreshes after successful creation"
+      ],
       "priority": 6,
-      "passes": false,
-      "notes": ""
+      "passes": false
     },
     {
       "id": "2.1",
-      "category": "ui",
-      "story": "Create item detail page with full information",
+      "title": "Create item detail page with full information",
       "steps": [
         "Create apps/web/src/app/app/[teamSlug]/feature/[id]/page.tsx",
         "Fetch item data using tRPC get procedure",
@@ -79,15 +89,18 @@
         "Add edit and delete action buttons",
         "Handle 404 for non-existent items"
       ],
-      "acceptance": "Detail page shows at /app/[teamSlug]/feature/[id]. Displays all item data. Edit and delete buttons work. 404 shown for invalid IDs.",
+      "acceptanceCriteria": [
+        "Detail page shows at /app/[teamSlug]/feature/[id]",
+        "Displays all item data",
+        "Edit and delete buttons work",
+        "404 shown for invalid IDs"
+      ],
       "priority": 7,
-      "passes": false,
-      "notes": ""
+      "passes": false
     },
     {
       "id": "2.2",
-      "category": "functional",
-      "story": "Implement edit functionality with optimistic updates",
+      "title": "Implement edit functionality with optimistic updates",
       "steps": [
         "Create edit form reusing create form components",
         "Pre-populate form with existing item data",
@@ -96,15 +109,18 @@
         "Handle update success with toast notification",
         "Handle update error with rollback and error message"
       ],
-      "acceptance": "Edit form shows with current values. Updates are optimistic (UI updates before server confirms). Success shows toast. Error rolls back changes and shows message.",
+      "acceptanceCriteria": [
+        "Edit form shows with current values",
+        "Updates are optimistic (UI updates before server confirms)",
+        "Success shows toast",
+        "Error rolls back changes and shows message"
+      ],
       "priority": 8,
-      "passes": false,
-      "notes": ""
+      "passes": false
     },
     {
       "id": "2.3",
-      "category": "functional",
-      "story": "Implement delete with confirmation dialog",
+      "title": "Implement delete with confirmation dialog",
       "steps": [
         "Create confirmation dialog component",
         "Show dialog on delete action click",
@@ -113,10 +129,14 @@
         "Handle success: close dialog, show toast, redirect to list",
         "Handle error: show error in dialog"
       ],
-      "acceptance": "Delete action shows confirmation dialog. Confirming deletes item and redirects to list. Cancel closes dialog without action. Error shows in dialog.",
+      "acceptanceCriteria": [
+        "Delete action shows confirmation dialog",
+        "Confirming deletes item and redirects to list",
+        "Cancel closes dialog without action",
+        "Error shows in dialog"
+      ],
       "priority": 9,
-      "passes": false,
-      "notes": ""
+      "passes": false
     }
   ]
 }

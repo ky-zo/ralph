@@ -103,32 +103,32 @@ json_set() {
     jq "$path = $value" "$file" > "$tmp_file" && mv "$tmp_file" "$file"
 }
 
-# Count incomplete stories in prd.json (supports both old array and new object format)
+# Count incomplete tasks in prd.json (supports both old array and new object format)
 count_incomplete_stories() {
     local prd_file=$1
-    # Handle new format with userStories wrapper or old array format
+    # Handle new format with tasks wrapper or old array format
     jq 'if type == "object" then .userStories else . end | [.[] | select(.passes == false)] | length' "$prd_file" 2>/dev/null || echo "0"
 }
 
-# Count complete stories in prd.json
+# Count complete tasks in prd.json
 count_complete_stories() {
     local prd_file=$1
     jq 'if type == "object" then .userStories else . end | [.[] | select(.passes == true)] | length' "$prd_file" 2>/dev/null || echo "0"
 }
 
-# Count total stories in prd.json
+# Count total tasks in prd.json
 count_total_stories() {
     local prd_file=$1
     jq 'if type == "object" then .userStories else . end | length' "$prd_file" 2>/dev/null || echo "0"
 }
 
-# Get next incomplete story from prd.json (sorted by priority, then id)
+# Get next incomplete task from prd.json (sorted by priority, then id)
 get_next_story() {
     local prd_file=$1
     jq -c 'if type == "object" then .userStories else . end | [.[] | select(.passes == false)] | sort_by(.priority // 999, .id) | first' "$prd_file" 2>/dev/null
 }
 
-# Mark story as complete in prd.json
+# Mark task as complete in prd.json
 mark_story_complete() {
     local prd_file=$1
     local story_id=$2
@@ -146,21 +146,6 @@ mark_story_complete() {
 get_branch_name() {
     local prd_file=$1
     jq -r '.branchName // empty' "$prd_file" 2>/dev/null
-}
-
-# Update story notes in prd.json
-update_story_notes() {
-    local prd_file=$1
-    local story_id=$2
-    local notes=$3
-    local tmp_file=$(mktemp)
-    jq --arg id "$story_id" --arg notes "$notes" '
-        if type == "object" then
-            .userStories = [.userStories[] | if .id == $id then .notes = $notes else . end]
-        else
-            map(if .id == $id then .notes = $notes else . end)
-        end
-    ' "$prd_file" > "$tmp_file" && mv "$tmp_file" "$prd_file"
 }
 
 # Append to progress file (format matches X guide)
