@@ -92,7 +92,7 @@ start_spinner() {
             
             local char="${SPINNER_CHARS:i++%${#SPINNER_CHARS}:1}"
             local action="${SPINNER_WORDS[$word_idx]}"
-            printf "\r${GREEN}%s${NC} %s %s" "$char" "$action" "$phase_desc"
+            printf "\r\033[K${GREEN}%s${NC} %s %s" "$char" "$action" "$phase_desc"
             sleep 0.1
         done
     ) &
@@ -240,7 +240,7 @@ Order by dependencies (infrastructure before features, backend before frontend)
 Each criterion must be something Ralph can CHECK, not something vague.
 
 ### Good criteria (verifiable):
-- "Add `status` column to tasks table with default 'pending'"
+- "Add \`status\` column to tasks table with default 'pending'"
 - "Filter dropdown has options: All, Active, Completed"
 - "Clicking delete shows confirmation dialog"
 - "Typecheck passes"
@@ -253,21 +253,21 @@ Each criterion must be something Ralph can CHECK, not something vague.
 - "Handles edge cases"
 
 ### Always include as final criterion:
-```
+\`\`\`
 "Typecheck passes"
-```
+\`\`\`
 
 For stories with testable logic, also include:
-```
+\`\`\`
 "Tests pass"
-```
+\`\`\`
 
 ### For stories that change UI, also include:
-```
-"Verify in browser using dev-browser skill"
-```
+\`\`\`
+"Verify in browser using agent-browser skill"
+\`\`\`
 
-Frontend stories are NOT complete until visually verified. Ralph will use the dev-browser skill to navigate to the page, interact with the UI, and confirm changes work.
+Frontend stories are NOT complete until visually verified. Ralph will use the agent-browser skill to navigate to the page, interact with the UI, and confirm changes work.
 
 ### Important Requirement
 For both files, use simple, direct and informational language. Avoid being verbose where it's not necessary.
@@ -277,8 +277,8 @@ For both files, use simple, direct and informational language. Avoid being verbo
 1. **Each user story becomes one JSON entry**
 2. **IDs**: Sequential (1.1, 1.2, etc.)
 3. **Priority**: Based on dependency order, then document order
-4. **All stories**: `passes: false`.
-5. **branchName**: Derive from feature name, kebab-case, prefixed with `r/`
+4. **All stories**: \`passes: false\`.
+5. **branchName**: Derive from feature name, kebab-case, prefixed with \`r/\`
 6. **Always add**: "Typecheck passes" to every story's acceptance criteria
 
 Now read the PRD and edit the files.
