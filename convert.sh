@@ -51,6 +51,7 @@ SPINNER_WORDS=(
     "Skedaddling"
     "Wibblewobblin"
     "Zigzagging"
+    "✊Wanking💦"
     "Bippityboppitying"
     "Splendiferous-ing"
     "Thingamabobbing"
